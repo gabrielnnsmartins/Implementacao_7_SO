@@ -39,7 +39,7 @@ int procurar_endereco_tlb(int endereco_logico, int page_number, int offset, int 
     }
 }
 
-int procurar_tabela(int endereco_logico, int page_number, int *page_table[], signed char *ram, int free_frame, FILE *backing_store){
+int procurar_tabela(int page_number, int *page_table, signed char *ram, int free_frame, FILE *backing_store){
 
 
     int frame_number = page_table[page_number];
@@ -47,7 +47,7 @@ int procurar_tabela(int endereco_logico, int page_number, int *page_table[], sig
     if(frame_number == -1){
 
         if(free_frame >= frame_number){
-            return 0;
+            return -2;
         }
 
         frame_number = free_frame;
@@ -57,7 +57,7 @@ int procurar_tabela(int endereco_logico, int page_number, int *page_table[], sig
         size_t bites_lidos =  fread(ram[frame_number], sizeof(signed char), tam_pagina, backing_store);
 
         if (bites_lidos != tam_pagina){
-            return 0;
+            return -2;
         }
 
         page_table[page_number] = frame_number;
@@ -65,9 +65,17 @@ int procurar_tabela(int endereco_logico, int page_number, int *page_table[], sig
     }
 }
 
-int end_fisico(int page_number ,int  frame_number, int offset){
+int end_fisico(int  frame_number, int offset){
     int endereco_fisico = (frame_number * tam_pagina) + offset;
     return endereco_fisico;
+}
+
+void escrever_resultado(int endereco_virtal, int endereco_fisico, signed char valor, FILE *correto, int tbl_hit){
+    if(correto!=NULL){
+        for(int i = 0; i<n_pagina; i++){
+            fprintf(correto,"Virtual address: %d TLB: %d Value: %hhd", endereco_virtal, endereco_fisico, );
+        }
+    }
 }
 
 signed char valor_memoria(signed char *ram, int frame_number, int offset){
@@ -82,8 +90,8 @@ int main(){
     int page_table[n_pagina];
     signed char ram[n_frame][tam_pagina];
     
-    int prox_livre_tlb = 0;
-    int tlb hit = 0;
+    int prox_frame_livre = 0;
+    int tlb_hit = 0;
     int tam_tlb = 32;
     int tlb_page[32];
     int tlb_frame[32];
@@ -113,6 +121,14 @@ int main(){
             int acerto = procurar_endereco_tlb(endereco_logico, page_number, offset, tam_tlb, tlb_page, tlb_frame);
 
             if (acerto == -1){
+                int frame_number = procurar_tabela(endereco_logico, page_number, page_table, ram, prox_frame_livre, backing_store);
+                if (frame_number == -2){
+                    break;
+                }else{
+                    int endereco_fisico = end_fisico(frame_number, offset);
+                    signed char valor = valor_memoria(ram, frame_number, offset);
+                }
+            }else{
 
             }
             }
