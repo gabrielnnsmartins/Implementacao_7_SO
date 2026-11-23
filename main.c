@@ -6,7 +6,7 @@
 #define tam_pagina  256
 
 
-void iniciar_TLB_Page_Table(int *page_table[], int *tlb_frame[], int *tlb_page[], int tam_tlb){
+void iniciar_TLB_Page_Table(int *page_table, int *tlb_frame, int *tlb_page, int tam_tlb){
 
     if (page_table!=NULL){
         for(int i = 0; i<n_pagina;i++){
@@ -22,49 +22,46 @@ void iniciar_TLB_Page_Table(int *page_table[], int *tlb_frame[], int *tlb_page[]
     }
 }
 
-int procurar_endereco_tlb(int endereco_logico, int page_number, int offset, int tam_tlb, int *tbl_page[], int *tlb_frame[]){
+int procurar_endereco_tlb(int endereco_logico, int page_number, int offset, int tam_tlb, int *tlb_page, int *tlb_frame){
 
     int hit = 0;
 
     for(int i = 0; i<tam_tlb; i++){
         if (tlb_page[i] == page_number){
-            frame_number = tbl_frame[i];
+            int frame_number = tlb_frame[i];
             hit += 1;
-            break;
+            return frame_number;
         }
     }
 
     if(hit == 0){
         return -1;
-    }else{
-        return 1;
     }
-
 }
 
-bool procurar_tabela(int endereco_logico, int page_number, int *page_table[], signed_char *ram[], int free_frame, FILE *backing_store){
+int procurar_tabela(int endereco_logico, int page_number, int *page_table[], signed char *ram, int free_frame, FILE *backing_store){
 
 
     int frame_number = page_table[page_number];
 
     if(frame_number == -1){
 
-        if(next_free_frame >= frame_number){
-            return false;
+        if(free_frame >= frame_number){
+            return 0;
         }
 
-        frame = free_frame;
+        frame_number = free_frame;
 
         free_frame += 1;
 
-        tam_bites =  fread(ram[frame_number], sizeof(signed char), tam_pagina, backing_store);
+        size_t bites_lidos =  fread(ram[frame_number], sizeof(signed char), tam_pagina, backing_store);
 
-        if (tam_bites != tam_pagina){
-            return false;
+        if (bites_lidos != tam_pagina){
+            return 0;
         }
 
         page_table[page_number] = frame_number;
-        return true;
+        return frame_number;
     }
 }
 
@@ -73,7 +70,7 @@ int end_fisico(int page_number ,int  frame_number, int offset){
     return endereco_fisico;
 }
 
-signed char valor_memoria(signed char *ram[], int frame_number, int offset){
+signed char valor_memoria(signed char *ram, int frame_number, int offset){
     if (ram != NULL){
         signed char valor = ram[frame_number][offset];
         return valor;
@@ -113,7 +110,11 @@ int main(){
             int page_number = (endereco_logico >> 8) & 0xFF;
             int offset = endereco_logico & 0xFF;
 
-            procurar_endereco_tlb(endereco_logico, page_number, );
+            int acerto = procurar_endereco_tlb(endereco_logico, page_number, offset, tam_tlb, tlb_page, tlb_frame);
+
+            if (acerto == -1){
+
+            }
             }
         }
     }
