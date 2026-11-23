@@ -22,10 +22,7 @@ void iniciar_TLB_Page_Table(int *page_table[], int *tlb_frame[], int *tlb_page[]
     }
 }
 
-void procurar_endereco_tlb(int endereco_logico, int page_number, int , int prox_frame, int tlb_hit, int tam_tlb, int *tbl_page[], int *tlb_frame[]){
-
-    int page_number = (endereco_logico >> 8) & 0xFF;
-    int offset = endereco_logico & 0xFF;
+int procurar_endereco_tlb(int endereco_logico, int page_number, int offset, int tam_tlb, int *tbl_page[], int *tlb_frame[]){
 
     int hit = 0;
 
@@ -33,22 +30,19 @@ void procurar_endereco_tlb(int endereco_logico, int page_number, int , int prox_
         if (tlb_page[i] == page_number){
             frame_number = tbl_frame[i];
             hit += 1;
-            brerak;
+            break;
         }
     }
 
     if(hit == 0){
-
+        return -1;
+    }else{
+        return 1;
     }
-
-    tbl_hit += hit;
-
-
-
 
 }
 
-void procurar_tabela(int endereco_logico, int *page_table[], signed_char *ram[], int free_frame, FILE *backing_store, int offset, int page_number){
+bool procurar_tabela(int endereco_logico, int page_number, int *page_table[], signed_char *ram[], int free_frame, FILE *backing_store){
 
 
     int frame_number = page_table[page_number];
@@ -56,7 +50,7 @@ void procurar_tabela(int endereco_logico, int *page_table[], signed_char *ram[],
     if(frame_number == -1){
 
         if(next_free_frame >= frame_number){
-            return;
+            return false;
         }
 
         frame = free_frame;
@@ -66,10 +60,11 @@ void procurar_tabela(int endereco_logico, int *page_table[], signed_char *ram[],
         tam_bites =  fread(ram[frame_number], sizeof(signed char), tam_pagina, backing_store);
 
         if (tam_bites != tam_pagina){
-            return;
+            return false;
         }
 
         page_table[page_number] = frame_number;
+        return true;
     }
 }
 
@@ -109,7 +104,18 @@ int main(){
     if(enderecos == NULL){
         return 0;
     }else{
-        
+        int leitor = 1;
+        while(leitor == 1){
+            int endereco_logico;
+            leitor == fscanf(enderecos, &endereco_logico);
+            if(leitor == 1){
+
+            int page_number = (endereco_logico >> 8) & 0xFF;
+            int offset = endereco_logico & 0xFF;
+
+            procurar_endereco_tlb(endereco_logico, page_number, );
+            }
+        }
     }
 
 
