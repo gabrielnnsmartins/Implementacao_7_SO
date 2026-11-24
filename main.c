@@ -73,8 +73,10 @@ int end_fisico(int  frame_number, int offset){
 void escrever_resultado(int endereco_virtal, int endereco_fisico, signed char valor, FILE *correto, int tbl_hit){
     if(correto!=NULL){
         for(int i = 0; i<n_pagina; i++){
-            fprintf(correto,"Virtual address: %d TLB: %d Value: %hhd", endereco_virtal, endereco_fisico, );
+            fprintf(correto,"Virtual address: %d TLB: %d Value: %hhd\n", endereco_virtal, endereco_fisico, value);
         }
+
+
     }
 }
 
@@ -107,8 +109,18 @@ int main(){
     FILE *enderecos = fopen("Addresses.txt", "r");
 
     if(enderecos == NULL){
+        fclose(backing_store);
         return 0;
     }else{
+
+        FILE *correto = fopen("correct.txt", "w");
+
+        if(correto == NULL){
+        fclose(backing_store);
+        fclose(enderecos);
+        return 0;
+        }
+
         int leitor = 1;
         while(leitor == 1){
             int endereco_logico;
@@ -121,7 +133,7 @@ int main(){
             int acerto = procurar_endereco_tlb(endereco_logico, page_number, offset, tam_tlb, tlb_page, tlb_frame);
 
             if (acerto == -1){
-                int frame_number = procurar_tabela(endereco_logico, page_number, page_table, ram, prox_frame_livre, backing_store);
+                int frame_number = procurar_tabela(endereco_logico, page_number, page_table, ram, &prox_frame_livre, backing_store);
                 if (frame_number == -2){
                     break;
                 }else{
@@ -129,14 +141,21 @@ int main(){
                     signed char valor = valor_memoria(ram, frame_number, offset);
                 }
             }else{
+                tlb_hit += 1;
 
+                int endereco_fisico = end_fisico(acerto, offset);
+                signed char valor = valor_memoria(ram, acerto, offset);
+
+                escrever_resultado(endereco_logico, endereco_fisico, valor, correto, tlb_hit);
             }
             }
         }
     }
 
 
-
+    fclose(backing_store);
+    fclose(enderecos);
+    fclose(correto);
 
 
     return 0;
