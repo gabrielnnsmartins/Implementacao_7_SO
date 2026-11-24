@@ -139,6 +139,8 @@ int main(){
                 }else{
                     int endereco_fisico = end_fisico(frame_number, offset);
                     signed char valor = valor_memoria(ram, frame_number, offset);
+
+                    escrever_resultado(endereco_logico, endereco_fisico, valor, correto);
                 }
             }else{
                 tlb_hit += 1;
@@ -146,16 +148,16 @@ int main(){
                 int endereco_fisico = end_fisico(acerto, offset);
                 signed char valor = valor_memoria(ram, acerto, offset);
 
-                escrever_resultado(endereco_logico, endereco_fisico, valor, correto, tlb_hit);
+                escrever_resultado(endereco_logico, endereco_fisico, valor, correto);
             }
             }
         }
+        fclose(correto);
     }
 
 
     fclose(backing_store);
     fclose(enderecos);
-    fclose(correto);
 
 
     return 0;
